@@ -1,0 +1,727 @@
+
+html_content = """<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>GIRIGO — 기리고</title>
+    <link href="https://fonts.googleapis.com/css2?family=Creepster&family=Noto+Serif+KR:wght@400;700&family=Inter:wght@300;400;600&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --blood: #8B0000;
+            --deep-blood: #2a0000;
+            --gold: #d4af37;
+            --dark: #050505;
+            --darker: #020202;
+            --panel: #0a0a0a;
+            --text: #e0e0e0;
+            --text-dim: #666666;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        html, body {
+            width: 100%;
+            height: 100%;
+            background: var(--darker);
+            color: var(--text);
+            font-family: 'Inter', sans-serif;
+            overflow-x: hidden;
+        }
+
+        /* ========================
+           GLOBAL EFFECTS
+           ======================== */
+        .noise-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            pointer-events: none;
+            z-index: 9999;
+            opacity: 0.04;
+            background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 512 512' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
+        }
+
+        .scanlines {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            pointer-events: none;
+            z-index: 9998;
+            opacity: 0.03;
+            background: repeating-linear-gradient(
+                0deg,
+                transparent,
+                transparent 2px,
+                rgba(0,0,0,0.3) 2px,
+                rgba(0,0,0,0.3) 4px
+            );
+        }
+
+        /* ========================
+           SECTIONS
+           ======================== */
+        .section {
+            display: none;
+            width: 100%;
+            min-height: 100vh;
+            position: relative;
+        }
+
+        .section.active {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            animation: sectionIn 0.8s ease-out;
+        }
+
+        @keyframes sectionIn {
+            from { opacity: 0; }
+            to { opacity: 1; }
+        }
+
+        /* ========================
+           LANDING PAGE
+           ======================== */
+        #landingSection {
+            justify-content: center;
+            background: var(--dark);
+            position: relative;
+        }
+
+        .landing-bg-glow {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            width: 600px;
+            height: 600px;
+            background: radial-gradient(circle, rgba(139,0,0,0.08) 0%, transparent 70%);
+            pointer-events: none;
+            animation: glowPulse 4s ease-in-out infinite;
+        }
+
+        @keyframes glowPulse {
+            0%, 100% { transform: translate(-50%, -50%) scale(1); opacity: 0.6; }
+            50% { transform: translate(-50%, -50%) scale(1.2); opacity: 1; }
+        }
+
+        .video-container {
+            position: relative;
+            width: 100%;
+            max-width: 500px;
+            aspect-ratio: 9/16;
+            margin: 0 auto;
+            border-radius: 4px;
+            overflow: hidden;
+            box-shadow: 0 0 80px rgba(139, 0, 0, 0.15), 0 0 150px rgba(0, 0, 0, 0.8);
+        }
+
+        .video-container video {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            display: block;
+        }
+
+        .video-glitch {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            pointer-events: none;
+            background: linear-gradient(
+                180deg,
+                transparent 0%,
+                rgba(139, 0, 0, 0.03) 50%,
+                transparent 100%
+            );
+            animation: glitchMove 3s linear infinite;
+        }
+
+        @keyframes glitchMove {
+            0% { transform: translateY(-100%); }
+            100% { transform: translateY(100%); }
+        }
+
+        .record-btn-landing {
+            margin-top: 40px;
+            padding: 18px 60px;
+            font-family: 'Creepster', cursive;
+            font-size: 2rem;
+            letter-spacing: 4px;
+            color: var(--blood);
+            background: transparent;
+            border: 2px solid var(--blood);
+            border-radius: 4px;
+            cursor: pointer;
+            position: relative;
+            overflow: hidden;
+            transition: all 0.4s ease;
+            text-transform: uppercase;
+            text-shadow: 0 0 20px rgba(139, 0, 0, 0.5);
+        }
+
+        .record-btn-landing::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: -100%;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(90deg, transparent, rgba(139, 0, 0, 0.2), transparent);
+            transition: left 0.5s ease;
+        }
+
+        .record-btn-landing:hover::before {
+            left: 100%;
+        }
+
+        .record-btn-landing:hover {
+            color: #ff1a1a;
+            border-color: #ff1a1a;
+            box-shadow: 0 0 40px rgba(139, 0, 0, 0.4), inset 0 0 20px rgba(139, 0, 0, 0.1);
+            transform: scale(1.03);
+            text-shadow: 0 0 30px rgba(255, 26, 26, 0.8);
+        }
+
+        .landing-footer {
+            margin-top: 30px;
+            font-family: 'Noto Serif KR', serif;
+            font-size: 0.75rem;
+            color: var(--text-dim);
+            letter-spacing: 6px;
+            text-transform: uppercase;
+            opacity: 0.5;
+        }
+
+        .landing-warning {
+            margin-top: 15px;
+            font-size: 0.7rem;
+            color: var(--blood);
+            opacity: 0.4;
+            letter-spacing: 3px;
+            animation: warningFlicker 4s infinite;
+        }
+
+        @keyframes warningFlicker {
+            0%, 100% { opacity: 0.4; }
+            50% { opacity: 0.15; }
+            52% { opacity: 0.4; }
+            54% { opacity: 0.1; }
+            56% { opacity: 0.4; }
+        }
+
+        /* ========================
+           RECORDING SECTION
+           ======================== */
+        #recordSection {
+            background: var(--darker);
+            padding: 40px 20px;
+            justify-content: flex-start;
+        }
+
+        .section-header {
+            text-align: center;
+            margin-bottom: 30px;
+        }
+
+        .section-header h2 {
+            font-family: 'Creepster', cursive;
+            font-size: 2rem;
+            color: var(--blood);
+            letter-spacing: 3px;
+            text-shadow: 0 0 20px rgba(139, 0, 0, 0.3);
+        }
+
+        .section-header p {
+            font-size: 0.85rem;
+            color: var(--text-dim);
+            margin-top: 8px;
+            font-family: 'Noto Serif KR', serif;
+        }
+
+        .camera-wrapper {
+            width: 100%;
+            max-width: 480px;
+            aspect-ratio: 9/16;
+            background: var(--panel);
+            border-radius: 8px;
+            overflow: hidden;
+            position: relative;
+            border: 1px solid rgba(139, 0, 0, 0.2);
+            box-shadow: 0 0 40px rgba(0, 0, 0, 0.8);
+        }
+
+        #cameraVideo {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            display: none;
+        }
+
+        #cameraVideo.active {
+            display: block;
+        }
+
+        .camera-placeholder {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            gap: 20px;
+        }
+
+        .camera-placeholder.hidden {
+            display: none;
+        }
+
+        .camera-placeholder .placeholder-icon {
+            font-size: 4rem;
+            opacity: 0.2;
+            animation: placeholderPulse 2s ease-in-out infinite;
+        }
+
+        @keyframes placeholderPulse {
+            0%, 100% { opacity: 0.2; transform: scale(1); }
+            50% { opacity: 0.4; transform: scale(1.1); }
+        }
+
+        .camera-placeholder p {
+            font-size: 0.85rem;
+            color: var(--text-dim);
+            text-align: center;
+            padding: 0 30px;
+        }
+
+        .rec-indicator {
+            position: absolute;
+            top: 15px;
+            left: 15px;
+            display: none;
+            align-items: center;
+            gap: 8px;
+            background: rgba(139, 0, 0, 0.85);
+            padding: 6px 14px;
+            border-radius: 4px;
+            font-size: 0.8rem;
+            font-weight: 700;
+            color: white;
+            z-index: 10;
+        }
+
+        .rec-indicator.active {
+            display: flex;
+        }
+
+        .rec-dot {
+            width: 10px;
+            height: 10px;
+            background: #ff0000;
+            border-radius: 50%;
+            animation: recBlink 0.8s infinite;
+        }
+
+        @keyframes recBlink {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.2; }
+        }
+
+        .rec-timer {
+            position: absolute;
+            top: 15px;
+            right: 15px;
+            font-family: 'Creepster', cursive;
+            font-size: 1.1rem;
+            color: var(--gold);
+            background: rgba(0, 0, 0, 0.7);
+            padding: 5px 12px;
+            border-radius: 4px;
+            display: none;
+            z-index: 10;
+            letter-spacing: 2px;
+        }
+
+        .rec-timer.active {
+            display: block;
+        }
+
+        .wish-overlay-text {
+            position: absolute;
+            bottom: 80px;
+            left: 20px;
+            right: 20px;
+            text-align: center;
+            font-family: 'Noto Serif KR', serif;
+            font-size: 1.1rem;
+            color: rgba(255, 255, 255, 0.95);
+            text-shadow: 0 2px 15px rgba(0, 0, 0, 0.9), 0 0 30px rgba(0, 0, 0, 0.8);
+            pointer-events: none;
+            display: none;
+            line-height: 1.6;
+            z-index: 10;
+        }
+
+        .wish-overlay-text.active {
+            display: block;
+        }
+
+        /* Wish input */
+        .wish-input-box {
+            width: 100%;
+            max-width: 480px;
+            margin-top: 25px;
+            background: var(--panel);
+            border-radius: 8px;
+            padding: 20px;
+            border: 1px solid rgba(139, 0, 0, 0.15);
+        }
+
+        .wish-input-box label {
+            display: block;
+            font-family: 'Creepster', cursive;
+            font-size: 1rem;
+            color: var(--blood);
+            letter-spacing: 2px;
+            margin-bottom: 10px;
+        }
+
+        #wishText {
+            width: 100%;
+            background: transparent;
+            border: none;
+            border-bottom: 1px solid rgba(139, 0, 0, 0.3);
+            color: var(--text);
+            font-family: 'Noto Serif KR', serif;
+            font-size: 1.1rem;
+            resize: none;
+            outline: none;
+            min-height: 70px;
+            padding: 5px 0;
+        }
+
+        #wishText:focus {
+            border-bottom-color: var(--blood);
+        }
+
+        #wishText::placeholder {
+            color: var(--text-dim);
+            opacity: 0.4;
+        }
+
+        .char-count {
+            text-align: right;
+            font-size: 0.7rem;
+            color: var(--text-dim);
+            margin-top: 8px;
+        }
+
+        /* Record controls */
+        .record-controls {
+            width: 100%;
+            max-width: 480px;
+            margin-top: 25px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 15px;
+        }
+
+        .record-circle-btn {
+            width: 75px;
+            height: 75px;
+            border-radius: 50%;
+            border: 3px solid var(--blood);
+            background: transparent;
+            cursor: pointer;
+            position: relative;
+            transition: all 0.3s ease;
+        }
+
+        .record-circle-btn::before {
+            content: '';
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            width: 55px;
+            height: 55px;
+            background: var(--blood);
+            border-radius: 50%;
+            transition: all 0.3s ease;
+        }
+
+        .record-circle-btn:hover {
+            transform: scale(1.08);
+            box-shadow: 0 0 30px rgba(139, 0, 0, 0.3);
+        }
+
+        .record-circle-btn.recording::before {
+            width: 24px;
+            height: 24px;
+            border-radius: 4px;
+            background: #ff0000;
+        }
+
+        .record-circle-btn.recording {
+            border-color: #ff0000;
+            animation: recordPulse 1.2s ease-in-out infinite;
+        }
+
+        @keyframes recordPulse {
+            0%, 100% { box-shadow: 0 0 0 0 rgba(255, 0, 0, 0.4); }
+            50% { box-shadow: 0 0 0 20px rgba(255, 0, 0, 0); }
+        }
+
+        .record-btn-label {
+            font-size: 0.75rem;
+            color: var(--text-dim);
+            letter-spacing: 3px;
+            text-transform: uppercase;
+        }
+
+        .record-actions {
+            width: 100%;
+            max-width: 480px;
+            margin-top: 20px;
+            display: flex;
+            gap: 12px;
+        }
+
+        .btn {
+            flex: 1;
+            padding: 14px 24px;
+            border-radius: 6px;
+            border: 1px solid rgba(139, 0, 0, 0.3);
+            background: var(--panel);
+            color: var(--text);
+            font-family: 'Inter', sans-serif;
+            font-size: 0.85rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            text-align: center;
+        }
+
+        .btn:hover {
+            background: rgba(139, 0, 0, 0.1);
+            border-color: rgba(139, 0, 0, 0.5);
+        }
+
+        .btn-primary {
+            background: linear-gradient(135deg, var(--deep-blood), var(--blood));
+            border: none;
+            color: white;
+            font-family: 'Creepster', cursive;
+            letter-spacing: 2px;
+            font-size: 1rem;
+        }
+
+        .btn-primary:hover {
+            background: linear-gradient(135deg, var(--blood), #a00000);
+            box-shadow: 0 0 25px rgba(139, 0, 0, 0.4);
+        }
+
+        .btn-primary:disabled {
+            opacity: 0.3;
+            cursor: not-allowed;
+        }
+
+        /* ========================
+           FILTER / REEL SECTION
+           ======================== */
+        #filterSection {
+            background: var(--darker);
+            padding: 40px 20px;
+            justify-content: flex-start;
+        }
+
+        .filter-preview-box {
+            width: 100%;
+            max-width: 480px;
+            aspect-ratio: 9/16;
+            background: var(--panel);
+            border-radius: 8px;
+            overflow: hidden;
+            position: relative;
+            border: 1px solid rgba(139, 0, 0, 0.2);
+            box-shadow: 0 0 40px rgba(0, 0, 0, 0.8);
+        }
+
+        #filterVideo {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+        }
+
+        .filter-fx-overlay {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            pointer-events: none;
+        }
+
+        .fx-vignette {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            box-shadow: inset 0 0 120px rgba(0, 0, 0, 0.7);
+        }
+
+        .fx-grain {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            opacity: 0.12;
+            background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noise'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.8' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noise)'/%3E%3C/svg%3E");
+        }
+
+        .fx-top-bar {
+            position: absolute;
+            top: 20px;
+            left: 20px;
+            right: 20px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .fx-date {
+            font-size: 0.7rem;
+            color: rgba(255, 255, 255, 0.5);
+            letter-spacing: 1px;
+        }
+
+        .fx-logo {
+            font-family: 'Creepster', cursive;
+            font-size: 0.9rem;
+            color: var(--gold);
+            letter-spacing: 4px;
+        }
+
+        .fx-wish-text {
+            position: absolute;
+            bottom: 90px;
+            left: 20px;
+            right: 20px;
+            text-align: center;
+        }
+
+        .fx-wish-text .wish-line {
+            font-family: 'Noto Serif KR', serif;
+            font-size: 1.05rem;
+            color: rgba(255, 255, 255, 0.95);
+            text-shadow: 0 2px 15px rgba(0, 0, 0, 0.9);
+            line-height: 1.7;
+        }
+
+        .fx-wish-text .wish-author {
+            font-size: 0.7rem;
+            color: var(--gold);
+            margin-top: 12px;
+            letter-spacing: 3px;
+            text-transform: uppercase;
+            opacity: 0.8;
+        }
+
+        .fx-watermark {
+            position: absolute;
+            bottom: 35px;
+            left: 50%;
+            transform: translateX(-50%);
+            font-family: 'Creepster', cursive;
+            font-size: 0.75rem;
+            color: rgba(212, 175, 55, 0.5);
+            letter-spacing: 5px;
+        }
+
+        /* Filter selector */
+        .filter-bar {
+            width: 100%;
+            max-width: 480px;
+            margin-top: 25px;
+        }
+
+        .filter-bar-label {
+            font-family: 'Creepster', cursive;
+            font-size: 0.9rem;
+            color: var(--blood);
+            letter-spacing: 2px;
+            margin-bottom: 12px;
+        }
+
+        .filter-options {
+            display: flex;
+            gap: 10px;
+            overflow-x: auto;
+            padding: 5px 0;
+            scrollbar-width: none;
+        }
+
+        .filter-options::-webkit-scrollbar {
+            display: none;
+        }
+
+        .filter-chip {
+            min-width: 80px;
+            padding: 10px 8px;
+            border-radius: 8px;
+            border: 2px solid transparent;
+            background: var(--panel);
+            cursor: pointer;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 6px;
+            transition: all 0.3s ease;
+        }
+
+        .filter-chip:hover {
+            border-color: rgba(139, 0, 0, 0.3);
+        }
+
+        .filter-chip.active {
+            border-color: var(--blood);
+            background: rgba(139, 0, 0, 0.1);
+        }
+
+        .filter-chip .chip-preview {
+            width: 50px;
+            height: 35px;
+            border-radius: 4px;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .filter-chip .chip-name {
+            font-size: 0.65rem;
+            color: var(--text-dim);
+            white-space: nowrap;
+        }
+
+        .filter-chip.active .chip-name {
+            color: var(--blood);
+        }
+
+        .chip-blood { background: linear-gradient(135deg, #3a0000, #8B0000); }
+        .chip-gold { background: l
